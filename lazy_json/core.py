@@ -4,6 +4,9 @@ from queue import deque
 from typing import Callable, Generator
 
 
+boundary = namedtuple("boundary", ["bgn", "end"])
+
+
 def json_generator(
     json_stream
 ) -> Generator:
@@ -50,18 +53,56 @@ def json_generator(
             yield loads(kv_pair)
 
 
-value_bound = namedtuple("value_bound", ["bgn", "end"])
+def get_value_type(
+    string: str
+) -> str:
+    if string in "+-.0123456789":
+        return "number"
+    if string == '"':
+        return "string"
+    if string in "tf":
+        return "boolean"
+    if string == "n":
+        return "null"
+
+
+def key_bound(
+    find: Callable,
+    get: Callable,
+    tell: Callable
+) -> boundary:
+    return string_bound(
+        find=find,
+        get=get,
+        tell=tell
+    )
+
+
+def value_bound(
+    find: Callable,
+    get: Callable,
+    tell: Callable
+) -> boundary:
+    bound_map = {
+        "number": lambda: number_bound(find, tell),
+        "string": lambda: string_bound(find, get, tell),
+        "boolean": None,
+        "null": None
+    }
+
+    value_type = get_value_type(get(tell()))
+    return bound_map[value_type]()
 
 
 # TODO: higher-order find/get must keep track (somehow) of where they've aready been 
 #  because otherwise something like `find` will just go to the earliest value.
-#  the good news is that the `value_bound` object returned contains the data needed
+#  the good news is that the `boundary` object returned contains the data needed
 #  to set the NEXT seek start bound.
 def string_bound(
     find: Callable,
     get: Callable,
     tell: Callable
-) -> value_bound:
+) -> boundary:
     bgn = tell()
     nxt = find(r'"', bgn + 1)
     nxt_prev = get(nxt - 1)
@@ -75,13 +116,13 @@ def string_bound(
         else:
             end_of_string = True
 
-    return value_bound(bgn, nxt)
+    return boundary(bgn, nxt + 1)
 
 
 def number_bound(
     find: Callable,
     tell: Callable
-) -> value_bound:
+) -> boundary:
     bgn = tell()
     end = None
 
@@ -91,4 +132,4 @@ def number_bound(
     maximum = max(next_comma, next_brace)
     end = minimum if minimum > 0 else maximum
 
-    return value_bound(bgn, end)
+    return boundary(bgn, end)

@@ -1,3 +1,4 @@
 .pytest_cache/
 __pycache__
 lazy_json/__pycache__ tests/__pycache__
+tests/__pycache__

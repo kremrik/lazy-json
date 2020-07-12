@@ -49,7 +49,21 @@ class test_string_bound(unittest.TestCase):
         def tell():
             return 0
 
-        gold = value_bound(0, 5)
+        gold = boundary(0, 6)
+        output = string_bound(find, get, tell)
+        self.assertEqual(gold, output)
+
+    def test_simple_with_more_quotes(self):
+        inpt = r'"value", "key": "another"'
+
+        def find(x, start=None, end=None):
+            return inpt.find(x, start, end)
+        def get(x):
+            return inpt[x]
+        def tell():
+            return 0
+
+        gold = boundary(0, 7)
         output = string_bound(find, get, tell)
         self.assertEqual(gold, output)
 
@@ -63,7 +77,7 @@ class test_string_bound(unittest.TestCase):
         def tell():
             return 2
 
-        gold = value_bound(2, 17)
+        gold = boundary(2, 18)
         output = string_bound(find, get, tell)
         self.assertEqual(gold, output)
 
@@ -78,7 +92,7 @@ class test_number_bound(unittest.TestCase):
         def tell():
             return 0
 
-        gold = value_bound(0, 1)
+        gold = boundary(0, 1)
         output = number_bound(find, tell)
         self.assertEqual(gold, output)
 
@@ -90,7 +104,7 @@ class test_number_bound(unittest.TestCase):
         def tell():
             return 1
 
-        gold = value_bound(1, 6)
+        gold = boundary(1, 6)
         output = number_bound(find, tell)
         self.assertEqual(gold, output)
 

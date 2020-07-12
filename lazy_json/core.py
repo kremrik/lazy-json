@@ -1,6 +1,7 @@
+from collections import namedtuple
 from json import loads
 from queue import deque
-from typing import Generator
+from typing import Callable, Generator
 
 
 def json_generator(
@@ -47,3 +48,47 @@ def json_generator(
             json_obj.clear()
             json_obj.append("{")
             yield loads(kv_pair)
+
+
+value_bound = namedtuple("value_bound", ["bgn", "end"])
+
+
+# TODO: higher-order find/get must keep track (somehow) of where they've aready been 
+#  because otherwise something like `find` will just go to the earliest value.
+#  the good news is that the `value_bound` object returned contains the data needed
+#  to set the NEXT seek start bound.
+def string_bound(
+    find: Callable,
+    get: Callable,
+    tell: Callable
+) -> value_bound:
+    bgn = tell()
+    nxt = find(r'"', bgn + 1)
+    nxt_prev = get(nxt - 1)
+
+    end_of_string = False
+
+    while not end_of_string:
+        if nxt_prev == "\\":
+            nxt = find(f'"', nxt + 1)
+            nxt_prev = get(nxt - 1)
+        else:
+            end_of_string = True
+
+    return value_bound(bgn, nxt)
+
+
+def number_bound(
+    find: Callable,
+    tell: Callable
+) -> value_bound:
+    bgn = tell()
+    end = None
+
+    next_comma = find(",")
+    next_brace = find("}")
+    minimum = min(next_comma, next_brace)
+    maximum = max(next_comma, next_brace)
+    end = minimum if minimum > 0 else maximum
+
+    return value_bound(bgn, end)

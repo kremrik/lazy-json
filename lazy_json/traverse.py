@@ -7,6 +7,15 @@ File interaction abstraction wrapping `mmap`
 """
 
 
+__all__ = [
+    "open_file",
+    "find",
+    "get",
+    "tell",
+    "seek"
+]
+
+
 def open_file(
     path: str,
 ) -> mmap.mmap:

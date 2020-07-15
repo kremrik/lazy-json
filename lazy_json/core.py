@@ -1,4 +1,6 @@
+from lazy_json.traverse import *
 from collections import namedtuple
+from functools import partial
 from json import loads
 from queue import deque
 from typing import Callable, Generator
@@ -7,50 +9,34 @@ from typing import Callable, Generator
 boundary = namedtuple("boundary", ["bgn", "end"])
 
 
-def json_generator(
-    json_stream
-) -> Generator:
-    """
-    How to find a key
-    -----------------
-    A string, in quotes, preceded by (sans whitespace) either of the following: 
-    - `{` 
-    - `,`
-    And terminated by:
-    - `:`
+def parse_schema(
+    find: Callable,
+    get: Callable,
+    tell: Callable,
+    seek: Callable
+) -> Generator[boundary, None, None]:
+    quote = find('"')
+    seek(quote)
 
-    How to find a value
-    -------------------
-    Any object following a `:`
-    """
-    syntax = r'{},'
-    whitespace = [" ", "\n", "\t"]
+    key = key_bound(find, get, tell)
     
-    json_schema = deque()
-    json_obj = deque()
+    val_pos = find(":", key.end) + 1
+    seek(val_pos)
+    
+    val = value_bound(find, get, tell)
 
-    for char in json_stream:
-        if char in whitespace:
-            continue
+    return key, val
 
-        if char not in syntax:
-            json_obj.append(char)
-            continue
 
-        if char == "{":
-            json_schema.append(char)
-            json_obj.append(char)
-        elif char == "}":
-            json_obj.append(char)
-            kv_pair = "".join(json_obj)
-            json_obj.clear()
-            yield loads(kv_pair)
-        elif char == ",":
-            json_obj.append("}")
-            kv_pair = "".join(json_obj)
-            json_obj.clear()
-            json_obj.append("{")
-            yield loads(kv_pair)
+def build_json_kv(
+    key_str: str,
+    value_str: str
+) -> dict:
+    """
+    any strings passed in must be passed like '"string"'
+    """
+    json_str = '{%s: %s}' % (key_str, value_str)
+    return loads(json_str)
 
 
 def get_value_type(

@@ -4,6 +4,7 @@ from unittest import skip
 from functools import partial
 
 
+@skip("no longer in use")
 class test_generator(unittest.TestCase):
 
     def test_one_kv(self):
@@ -107,6 +108,24 @@ class test_number_bound(unittest.TestCase):
         gold = boundary(1, 6)
         output = number_bound(find, tell)
         self.assertEqual(gold, output)
+
+
+class test_parse_schema(unittest.TestCase):
+
+    def test_single_obj(self):
+        inpt = r'{"foo":"bar"}'
+        gold = [
+            (boundary(1, 5), boundary(8, 13))
+        ]
+
+        def find(x, start=None, end=None):
+            return inpt.find(x, start, end)
+        def get(x):
+            return inpt[x]
+        def tell():
+            return 0
+        def seek(x):
+            return None
 
 
 if __name__ == "__main__":

@@ -94,3 +94,20 @@ def get_next_unescaped_char(
         return char_pos
     else:
         return get_next_unescaped_char(mm, char)
+
+
+def get_next_non_whitespace_char(
+    mm: mmap.mmap,
+) -> int:
+    whitespace = [" ", "\t", "\n"]
+    cur_pos = tell(mm)
+    seek(mm, cur_pos + 1)
+    next_char = get(mm, cur_pos + 1)
+
+    if next_char == "":
+        return -1
+
+    if next_char not in whitespace:
+        return next_char
+    else:
+        return get_next_non_whitespace_char(mm)

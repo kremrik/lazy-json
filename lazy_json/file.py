@@ -52,6 +52,7 @@ def get(
     start: int,
     end: int = None
 ) -> str:
+    """non-inclusive end"""
     if not end:
         end = start + 1
     return mm[start:end].decode()
@@ -146,13 +147,16 @@ def get_key_bound(
 ) -> bound:
     key_bgn = get_next_char(mm, pos, '"')
     key_end = get_next_unescaped_char(mm, key_bgn.position + 1, '"')
-    return bound(key_bgn.position + 1, key_end.position)
+    return bound(key_bgn.position, key_end.position + 1)
 
 
 def get_value_bound(
     mm: mmap.mmap,
     pos: int
 ) -> bound:
+    """
+    should not be responsible for determining if recursive call needed
+    """
     colon = get_next_char(mm, pos, ":")
     bgn = get_next_non_whitespace_char(mm, colon.position + 1)
     
@@ -167,7 +171,7 @@ def get_value_bound(
             end_val = comma.position
 
     else:
-        bgn_val = bgn.position + 1
-        end_val = get_next_unescaped_char(mm, bgn.position + 1, '"').position
+        bgn_val = bgn.position
+        end_val = get_next_unescaped_char(mm, bgn.position + 1, '"').position + 1
 
     return bound(bgn_val, end_val)

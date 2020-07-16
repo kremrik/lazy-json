@@ -5,6 +5,20 @@ import unittest
 from unittest import skip
 
 
+"""
+{
+    "one": {
+        "two": 2
+    },
+    "three": 3,
+    "another": "and so i said \"hahaha\"!",
+    "big_number": -3.14159,
+    "boolean": true,
+    "empty": null
+}
+"""
+
+
 with open("/home/kemri/Projects/lazy-json/file_examples/nested.json", "r") as j:
     MM = mmap.mmap(
         j.fileno(), 
@@ -40,7 +54,7 @@ class test_combinations(unittest.TestCase):
         output = file.get_next_char(mm, pos, char)
         self.assertEqual(gold, output)
 
-    def test_get_next_char_at_pos_gt_o(self):
+    def test_get_next_char_at_pos_gt_0(self):
         mm = MM
         pos = 1
         char = '{'
@@ -98,14 +112,14 @@ class test_schemes(unittest.TestCase):
     def test_get_key_bound(self):
         mm = MM
         pos = 0
-        gold = file.bound(7, 10)
+        gold = file.bound(6, 11)
         output = file.get_key_bound(mm, pos)
         self.assertEqual(gold, output)
 
     def test_get_value_bound_string(self):
         mm = MM
         pos = 68
-        gold = file.bound(71, 96)
+        gold = file.bound(70, 97)
         output = file.get_value_bound(mm, pos)
         self.assertEqual(gold, output)
 

@@ -1,0 +1,10 @@
+{
+    "one": {
+        "two": 2
+    },
+    "three": 3,
+    "another": "and so i said \"hahaha\"!",
+    "big_number": -3.14159,
+    "boolean": true,
+    "empty": null
+}

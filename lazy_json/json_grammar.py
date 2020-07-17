@@ -1,3 +1,4 @@
+from lazy_json.file import get_value_bound
 from lazy_json import file
 import json
 import mmap
@@ -5,33 +6,36 @@ from typing import Callable, Generator
 
 
 def parse_json(
-    path: str
+    data,
+    pos: int
 ) -> Generator:
-    mm = file.open_file(path)
-
-    size = len(mm)
-    pos = 0
-
-    while pos < size and pos >= 0:
-        print(pos, file.get(mm, pos))
-        nxt = file.get_next_non_whitespace_char(mm, pos)
-
-        if nxt.result in "{,":
-            key, val = get_kv_bounds(mm, pos)
-            pos = val.end + 1
-            key_str = file.get(mm, key.bgn, key.end)
-            val_str = file.get(mm, val.bgn, val.end)
-            yield (key_str, val_str)
-        elif nxt.result == "}":
-            raise StopIteration
+    pass
 
 
-def get_kv_bounds(
+def parse_key_value_pair(
     data,
     pos: int
 ) -> tuple:
-    key = file.get_key_bound(data, pos + 1)
-    val = file.get_value_bound(data, key.end)
+    """
+    Call this function when you hit an opening brace
+
+    `pos` is presumed to either precede the key, or begin the key.
+    in either case, the beginning quote char of said key will be reflected.
+    """
+    key = file.get_key_bound(data, pos)
+
+    pos = key.end  # different way of accessing position than find_sep.position
+    find_sep = file.get_next_char(data, pos, ":")
+    pos = find_sep.position
+
+    determine_val = file.get_next_non_whitespace_char(data, pos)
+    pos = determine_val.position
+
+    if determine_val.result == "{":
+        val = parse_json(data, pos + 1)  # won't work right now
+    else:
+        val = get_value_bound(data, pos)
+
     return key, val
 
 

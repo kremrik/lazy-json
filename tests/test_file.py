@@ -123,6 +123,20 @@ class test_schemes(unittest.TestCase):
         output = file.end_of_json_obj(mm, pos)
         self.assertEqual(gold, output)
 
+    def test_val_is_json_obj_true(self):
+        mm = MM
+        pos = 13
+        gold = True
+        output = file.val_is_json_obj(mm, pos)
+        self.assertEqual(gold, output)
+
+    def test_val_is_json_obj_false(self):
+        mm = MM
+        pos = 30
+        gold = False
+        output = file.val_is_json_obj(mm, pos)
+        self.assertEqual(gold, output)
+
     def test_seek_to_key(self):
         mm = MM
         pos = 0
@@ -144,39 +158,39 @@ class test_schemes(unittest.TestCase):
         output = file.get_key(mm, pos)
         self.assertEqual(gold, output)
 
-    def test_get_value_string(self):
+    def test_get_val_string(self):
         mm = MM
         pos = 70
         gold = file.bound(70, 97)
-        output = file.get_value(mm, pos)
+        output = file.get_val(mm, pos)
         self.assertEqual(gold, output)
 
-    def test_get_value_int(self):
+    def test_get_val_int(self):
         mm = MM
         pos = 30
         gold = file.bound(30, 31)
-        output = file.get_value(mm, pos)
+        output = file.get_val(mm, pos)
         self.assertEqual(gold, output)
 
-    def test_get_value_float(self):
+    def test_get_val_float(self):
         mm = MM
         pos = 117
         gold = file.bound(117, 125)
-        output = file.get_value(mm, pos)
+        output = file.get_val(mm, pos)
         self.assertEqual(gold, output)
 
-    def test_get_value_bool(self):
+    def test_get_val_bool(self):
         mm = MM
         pos = 142
         gold = file.bound(142, 146)
-        output = file.get_value(mm, pos)
+        output = file.get_val(mm, pos)
         self.assertEqual(gold, output)
     
-    def test_get_value_null(self):
+    def test_get_val_null(self):
         mm = MM
         pos = 161
         gold = file.bound(161, 165)
-        output = file.get_value(mm, pos)
+        output = file.get_val(mm, pos)
         self.assertEqual(gold, output)
 
 

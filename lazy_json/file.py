@@ -1,7 +1,7 @@
 import mmap
 from collections import namedtuple
 from os import name
-from typing import Union
+from typing import Tuple, Union
 
 
 """
@@ -148,9 +148,17 @@ def end_of_json_obj(
     mm: mmap.mmap,
     pos: int
 ) -> bool:
-    nxt = get_next_non_whitespace_char(mm, pos + 1)
-    print(nxt)
+    nxt = get_next_non_whitespace_char(mm, pos)
     if nxt.result == "}":
+        return True
+    return False
+
+
+def val_is_json_obj(
+    mm: mmap.mmap,
+    pos: int
+) -> bool:
+    if get(mm, pos) == "{":
         return True
     return False
 
@@ -181,7 +189,7 @@ def get_key(
     return bound(pos, key_end.position + 1)
 
 
-def get_value(
+def get_val(
     mm: mmap.mmap,
     pos: int
 ) -> bound:

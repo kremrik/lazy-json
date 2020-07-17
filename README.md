@@ -1,15 +1,13 @@
 # lazy-json
 
 ## Branch file-layer notes
-WHAT HAPPENED?
---------------
+#### WHAT HAPPENED?
 It currently doesn't seem possible to me to yield k/v pairs where v could be a
 generator itself due to the fact that we would need to call all of its values
 to determine where the end of the line is (all that just to know how to move to
 the next non-nested key).
 
-WHAT DID WE LEARN?
-------------------
+#### WHAT DID WE LEARN?
 That we could recursively yield our way through every single key/value in a
 JSON object, but would have to find a way to track the parent key in doing
 that (so the user wouldn't get lost while iterating).
@@ -18,12 +16,13 @@ utilized only the schemes level of the `file` layer. `wrapper` made a call to a
 lower level, but that could probably be fixed easily and quickly if we wanted
 to follow the letter of the law there.
 
-WHERE COULD THIS GO NEXT?
--------------------------
+#### WHERE COULD THIS GO NEXT?
 We could implement a generator such that the user could simply iterate through
 every single k/v pair, including nested ones, without being able to skip said
 nested values. It would require a way to track the parent key, just to prevent 
 the user from getting lost in navigation. Would just need to use `yield from`.
+
+## Design goals
 
 `lazy-json` is a utility that solves a problem you hope never to have: a JSON file that's too large to load in memory. 
 I don't know what kind of monster would create such a file, but this is an exercise in solving the interesting problem

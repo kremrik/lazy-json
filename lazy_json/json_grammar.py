@@ -1,7 +1,7 @@
 from lazy_json.file import val_is_json_obj
 from lazy_json import file
 import json
-from typing import Generator, Tuple
+from typing import Generator
 
 
 def wrapper(

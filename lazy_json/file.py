@@ -82,6 +82,9 @@ def get_next_char(
     pos: int,
     char: str
 ) -> mmap_result:
+    """
+    will find the next value INCLUSIVE to current position
+    """
     char_pos = find(mm, char, pos)
     return mmap_result(char_pos, char_pos)
 
@@ -141,24 +144,51 @@ def get_prev_non_whitespace_char(
 bound = namedtuple("bound", ["bgn", "end"])
 
 
-def get_key_bound(
+def end_of_json_obj(
     mm: mmap.mmap,
     pos: int
-) -> bound:
-    key_bgn = get_next_char(mm, pos, '"')
-    key_end = get_next_unescaped_char(mm, key_bgn.position + 1, '"')
-    return bound(key_bgn.position, key_end.position + 1)
+) -> bool:
+    nxt = get_next_non_whitespace_char(mm, pos + 1)
+    print(nxt)
+    if nxt.result == "}":
+        return True
+    return False
 
 
-def get_value_bound(
+def seek_to_key(
     mm: mmap.mmap,
     pos: int
-) -> bound:
-    """
-    should not be responsible for determining if recursive call needed
-    """
+) -> int:
+    return get_next_char(mm, pos, '"').position
+
+
+def seek_to_val(
+    mm: mmap.mmap,
+    pos: int
+) -> int:
     colon = get_next_char(mm, pos, ":")
-    bgn = get_next_non_whitespace_char(mm, colon.position + 1)
+    return get_next_non_whitespace_char(mm, colon.position + 1).position
+
+
+def get_key(
+    mm: mmap.mmap,
+    pos: int
+) -> bound:
+    """
+    given the `pos` indicating the beginning of a key, return the end position
+    """
+    key_end = get_next_unescaped_char(mm, pos + 1, '"')
+    return bound(pos, key_end.position + 1)
+
+
+def get_value(
+    mm: mmap.mmap,
+    pos: int
+) -> bound:
+    """
+    given the `pos` indicating the beginning of a value, return the end position
+    """
+    bgn = get_next_non_whitespace_char(mm, pos)
     
     if bgn.result != '"':
         bgn_val = bgn.position

@@ -109,46 +109,74 @@ class test_combinations(unittest.TestCase):
 
 class test_schemes(unittest.TestCase):
 
-    def test_get_key_bound(self):
+    def test_end_of_json_obj_true(self):
+        mm = MM
+        pos = 30
+        gold = True
+        output = file.end_of_json_obj(mm, pos)
+        self.assertEqual(gold, output)
+
+    def test_end_of_json_obj_false(self):
+        mm = MM
+        pos = 40
+        gold = False
+        output = file.end_of_json_obj(mm, pos)
+        self.assertEqual(gold, output)
+
+    def test_seek_to_key(self):
         mm = MM
         pos = 0
+        gold = 6
+        output = file.seek_to_key(mm, pos)
+        self.assertEqual(gold, output)
+
+    def test_seek_to_val(self):
+        mm = MM
+        pos = 10
+        gold = 13
+        output = file.seek_to_val(mm, pos)
+        self.assertEqual(gold, output)
+
+    def test_get_key(self):
+        mm = MM
+        pos = 6
         gold = file.bound(6, 11)
-        output = file.get_key_bound(mm, pos)
+        output = file.get_key(mm, pos)
         self.assertEqual(gold, output)
 
-    def test_get_value_bound_string(self):
+    def test_get_value_string(self):
         mm = MM
-        pos = 68
+        pos = 70
         gold = file.bound(70, 97)
-        output = file.get_value_bound(mm, pos)
+        output = file.get_value(mm, pos)
         self.assertEqual(gold, output)
 
-    def test_get_value_bound_int(self):
+    def test_get_value_int(self):
         mm = MM
-        pos = 28
+        pos = 30
         gold = file.bound(30, 31)
-        output = file.get_value_bound(mm, pos)
+        output = file.get_value(mm, pos)
         self.assertEqual(gold, output)
 
-    def test_get_value_bound_float(self):
+    def test_get_value_float(self):
         mm = MM
-        pos = 115
+        pos = 117
         gold = file.bound(117, 125)
-        output = file.get_value_bound(mm, pos)
+        output = file.get_value(mm, pos)
         self.assertEqual(gold, output)
 
-    def test_get_value_bound_bool(self):
+    def test_get_value_bool(self):
         mm = MM
-        pos = 140
+        pos = 142
         gold = file.bound(142, 146)
-        output = file.get_value_bound(mm, pos)
+        output = file.get_value(mm, pos)
         self.assertEqual(gold, output)
     
-    def test_get_value_bound_null(self):
+    def test_get_value_null(self):
         mm = MM
-        pos = 159
+        pos = 161
         gold = file.bound(161, 165)
-        output = file.get_value_bound(mm, pos)
+        output = file.get_value(mm, pos)
         self.assertEqual(gold, output)
 
 

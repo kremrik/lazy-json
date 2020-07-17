@@ -1,7 +1,7 @@
 from lazy_json.file import val_is_json_obj
 from lazy_json import file
 import json
-from typing import Generator
+from typing import Generator, Tuple
 
 
 def wrapper(
@@ -14,7 +14,7 @@ def wrapper(
 def parse(
     data,
     pos: int
-) -> Generator:
+):
     cont = True
 
     while cont:
@@ -31,8 +31,6 @@ def parse(
             val = file.get_val(data, val_pos)
 
         pos = val.end  # ERROR: this will not work if val is result of recursive call
-
-        yield key, val
 
         if file.end_of_json_obj(data, pos):
             cont = False

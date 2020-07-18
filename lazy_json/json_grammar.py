@@ -4,33 +4,35 @@ import json
 from typing import Generator
 
 
-def wrapper(
-    path: str
-) -> Generator:
-    data = file.open_file(path)
-    return parse(data, 0)
-
-
-def parse(
+def get_kv(
     data,
-    pos: int
+    key: str
 ):
-    cont = True
+    correct_level = False
+    pos = 0
+    size = file.size(data)
 
-    while cont:
-        key = file.get_key(
-            data,
-            file.seek_to_key(data, pos)
-        )
+    while not correct_level:
+        found = file.get_next_char(data, pos, key)
 
-        val_pos = file.seek_to_val(data, key.end)
+        if pos >= size or found.position < 0:
+            raise KeyError(f"Key '{key}' does not exist")
+        
+        # don't count first brace
+        open_braces = file.count_between(data, "{", 0, found.position) - 1
+        closed_braces = file.count_between(data, "{", 0, found.position)
 
-        if val_is_json_obj(data, val_pos):
-            val = parse(data, val_pos)
+        if open_braces > closed_braces:
+            pos = found.position + 1
         else:
-            val = file.get_val(data, val_pos)
+            correct_level = True
+            
+            key_bounds = file.get_key(data, pos - 1)  # -1 because we want quote
+            val_pos = file.seek_to_val(data, key_bounds.end)
 
-        pos = val.end  # ERROR: this will not work if val is result of recursive call
+            if file.get(data, val_pos) == "{":
+                val_bounds = file.get_val(data, val_pos)
+            else:
+                val_bounds = file.bound((val_pos, file.find_end_of_json(data, val_pos)))
 
-        if file.end_of_json_obj(data, pos):
-            cont = False
+    return key_bounds, val_bounds

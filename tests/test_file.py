@@ -29,11 +29,11 @@ with open("/home/kemri/Projects/lazy-json/file_examples/nested.json", "r") as j:
 
 class test_primitives(unittest.TestCase):
 
-    def test_find(self):
+    def test_lfind(self):
         mm = MM
         char = '"'
         gold = 6
-        output = file.find(mm, char)
+        output = file.lfind(mm, char)
         self.assertEqual(gold, output)
 
     def test_get(self):
@@ -191,6 +191,38 @@ class test_schemes(unittest.TestCase):
         pos = 161
         gold = file.bound(161, 165)
         output = file.get_val(mm, pos)
+        self.assertEqual(gold, output)
+
+    def test_count_between_matches(self):
+        mm = MM
+        sub = "o"
+        bgn = 0
+        end = 30
+        gold = 2
+        output = file.count_between(mm, sub, bgn, end)
+        self.assertEqual(gold, output)
+
+    def test_count_between_no_matches(self):
+        mm = MM
+        sub = "foo"
+        bgn = 0
+        end = 30
+        gold = 0
+        output = file.count_between(mm, sub, bgn, end)
+        self.assertEqual(gold, output)
+
+    def test_find_end_of_json_whole(self):
+        mm = MM
+        pos = 0
+        gold = 166
+        output = file.find_end_of_json(mm, pos)
+        self.assertEqual(gold, output)
+
+    def test_find_end_of_json_nested(self):
+        mm = MM
+        pos = 13
+        gold = 36
+        output = file.find_end_of_json(mm, pos)
         self.assertEqual(gold, output)
 
 

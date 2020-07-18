@@ -25,7 +25,7 @@ def open_file(
     return mm
 
 
-def find(
+def lfind(
     mm: mmap.mmap,
     char: Union[bytes, str],
     start: int = 0,
@@ -41,6 +41,28 @@ def find(
         )
     else:
         return mm.find(
+            char,
+            start,
+            end
+        )
+
+
+def rfind(
+    mm: mmap.mmap,
+    char: Union[bytes, str],
+    start: int = 0,
+    end: int = None
+) -> int:
+    if isinstance(char, str):
+        char = char.encode()
+
+    if not end:
+        return mm.rfind(
+            char,
+            start
+        )
+    else:
+        return mm.rfind(
             char,
             start,
             end
@@ -72,6 +94,12 @@ def seek(
     return mm.seek(pos)
 
 
+def size(
+    mm: mmap.mmap
+) -> int:
+    return mm.size()
+
+
 # mmap traversal combinations
 #------------------------------------------------------------------------------
 mmap_result = namedtuple("mmap_result", ["result", "position"])
@@ -83,9 +111,9 @@ def get_next_char(
     char: str
 ) -> mmap_result:
     """
-    will find the next value INCLUSIVE to current position
+    will lfind the next value INCLUSIVE to current position
     """
-    char_pos = find(mm, char, pos)
+    char_pos = lfind(mm, char, pos)
     return mmap_result(char_pos, char_pos)
 
 
@@ -94,7 +122,7 @@ def get_next_unescaped_char(
     pos: int,
     char: str
 ) -> mmap_result:
-    char_pos = find(mm, char, pos)
+    char_pos = lfind(mm, char, pos)
     pos += 1
 
     prev = get(mm, char_pos - 1)  # will wrap around to -1
@@ -144,11 +172,59 @@ def get_prev_non_whitespace_char(
 bound = namedtuple("bound", ["bgn", "end"])
 
 
+def count_between(
+    mm: mmap.mmap,
+    sub: str,
+    start: int,
+    end: int
+) -> int:
+    """
+    count is inclusive to `start` and `end`
+    """
+    count = 0
+    pos = start
+    
+    while 1:
+        found = get_next_char(mm, pos, sub)
+        if found.position == -1 or found.position > end:
+            break
+        count += 1
+        pos = found.position + 1
+
+    return count
+
+
+def find_end_of_json(
+    mm: mmap.mmap,
+    pos: int
+) -> int:
+    """
+    `pos` must be the opening brace of a JSON object
+    """
+    opens = 0
+    closeds = 0
+
+    opens += 1  # include the opening brace
+
+    while opens > closeds:
+        o = get_next_char(mm, pos + 1, "{")
+        c = get_next_char(mm, pos + 1, "}")
+
+        if o.position > 0 and (o.position < c.position):
+            opens += 1
+            pos = o.position
+        else:
+            closeds += 1
+            pos = c.position
+
+    return pos
+
+
 def end_of_json_obj(
     mm: mmap.mmap,
     pos: int
 ) -> bool:
-    nxt = get_next_non_whitespace_char(mm, pos)
+    nxt = get_next_non_whitespace_char(mm, pos + 1)  # +1 problematic?
     if nxt.result == "}":
         return True
     return False

@@ -224,10 +224,21 @@ def end_of_json_obj(
     mm: mmap.mmap,
     pos: int
 ) -> bool:
-    nxt = get_next_non_whitespace_char(mm, pos + 1)  # +1 problematic?
+    """
+    Reaches out past the current position to see if the current position is
+    actually the last character before the end of the JSON block
+    """
+    nxt = get_next_non_whitespace_char(mm, pos)
     if nxt.result == "}":
         return True
     return False
+
+
+def end_of_file(
+    mm: mmap.mmap,
+) -> int:
+    # TODO: breaks abstraction bounds, may need to refactor `get_next`
+    return rfind(mm, "}")
 
 
 def val_is_json_obj(

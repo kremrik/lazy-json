@@ -111,7 +111,7 @@ class test_schemes(unittest.TestCase):
 
     def test_end_of_json_obj_true(self):
         mm = MM
-        pos = 30
+        pos = 31
         gold = True
         output = file.end_of_json_obj(mm, pos)
         self.assertEqual(gold, output)

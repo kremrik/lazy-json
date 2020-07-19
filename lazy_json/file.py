@@ -1,3 +1,5 @@
+import contextlib
+import json
 import mmap
 from collections import namedtuple
 from os import name
@@ -11,58 +13,39 @@ File interaction abstraction wrapping `mmap`
 
 # mmap traversal primitives
 #------------------------------------------------------------------------------
+def read_from_io(
+    text_io_wrapper
+):
+    return mmap.mmap(
+        text_io_wrapper.fileno(),
+        0,  # not sure if this is wise
+        access=mmap.ACCESS_READ
+    )
 
 
-def open_file(
-    path: str,
-) -> mmap.mmap:
-    with open(path, "r") as j:
-        mm = mmap.mmap(
-            j.fileno(), 
-            0,  # not sure if this is wise
-            access=mmap.ACCESS_READ
-            )
-    return mm
-
-
-def lfind(
+def find(
     mm: mmap.mmap,
     char: Union[bytes, str],
     start: int = 0,
-    end: int = None
+    end: int = None,
+    side: str = "left"
 ) -> int:
+    sides = {
+        "left": mm.find,
+        "right": mm.rfind
+    }
+    find = sides[side]
+
     if isinstance(char, str):
         char = char.encode()
 
     if not end:
-        return mm.find(
+        return find(
             char,
             start
         )
     else:
-        return mm.find(
-            char,
-            start,
-            end
-        )
-
-
-def rfind(
-    mm: mmap.mmap,
-    char: Union[bytes, str],
-    start: int = 0,
-    end: int = None
-) -> int:
-    if isinstance(char, str):
-        char = char.encode()
-
-    if not end:
-        return mm.rfind(
-            char,
-            start
-        )
-    else:
-        return mm.rfind(
+        return find(
             char,
             start,
             end
@@ -78,20 +61,6 @@ def get(
     if not end:
         end = start + 1
     return mm[start:end].decode()
-
-
-def tell(
-    mm: mmap.mmap
-) -> int:
-    return mm.tell()
-
-
-def seek(
-    mm: mmap.mmap,
-    pos: int
-) -> None:
-    # side-effect-y
-    return mm.seek(pos)
 
 
 def size(
@@ -111,9 +80,9 @@ def get_next_char(
     char: str
 ) -> mmap_result:
     """
-    will lfind the next value INCLUSIVE to current position
+    will find the next value INCLUSIVE to current position
     """
-    char_pos = lfind(mm, char, pos)
+    char_pos = find(mm, char, pos)
     return mmap_result(char_pos, char_pos)
 
 
@@ -122,7 +91,7 @@ def get_next_unescaped_char(
     pos: int,
     char: str
 ) -> mmap_result:
-    char_pos = lfind(mm, char, pos)
+    char_pos = find(mm, char, pos)
     pos += 1
 
     prev = get(mm, char_pos - 1)  # will wrap around to -1
@@ -238,7 +207,7 @@ def end_of_file(
     mm: mmap.mmap,
 ) -> int:
     # TODO: breaks abstraction bounds, may need to refactor `get_next`
-    return rfind(mm, "}")
+    return find(mm, "}", -1, None, "right")
 
 
 def val_is_json_obj(
@@ -300,3 +269,13 @@ def get_val(
         end_val = get_next_unescaped_char(mm, bgn.position + 1, '"').position + 1
 
     return bound(bgn_val, end_val)
+
+
+def get_json_from_bound(
+    mm: mmap.mmap,
+    b: bound
+):
+    bgn = b.bgn
+    end = b.end
+    slc = get(mm, bgn, end)
+    return json.loads(slc)

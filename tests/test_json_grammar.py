@@ -1,6 +1,6 @@
 from unittest.main import main
 from lazy_json import file
-from lazy_json import json_grammar
+from lazy_json import lazy_json
 import mmap
 import unittest
 
@@ -21,7 +21,7 @@ class test_walk_json(unittest.TestCase):
             (file.bound(1, 6), file.bound(8, 9)),
             (file.bound(11, 16), file.bound(18, 19))
         ]
-        output = list(json_grammar.walk_json(data, 0, 19))
+        output = list(lazy_json.walk_json(data, 0, 19))
         self.assertEqual(gold, output)
 
 

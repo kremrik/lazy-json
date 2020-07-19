@@ -9,7 +9,7 @@ class ljson(object):
         self.start = start
         self.end = end
 
-    @lru_cache(maxsize=100000)
+    @lru_cache(maxsize=100)
     def __getitem__(self, key: str):
         walker = walk_json(self.data, self.start, self.end)
         for k, v in walker:

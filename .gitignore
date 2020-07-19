@@ -2,3 +2,4 @@
 __pycache__
 lazy_json/__pycache__ tests/__pycache__
 tests/__pycache__
+huge.json

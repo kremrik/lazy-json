@@ -1,4 +1,3 @@
-import contextlib
 import json
 import mmap
 from collections import namedtuple

@@ -2,7 +2,7 @@
 
 ## Design goals
 `lazy_json` allows you to treat arbitrarily large JSON files on disk as a streaming problem rather than a batch problem.
-It lazily generates key/value pairs of the object such parsing is bound by CPU rather than memory or IO.
+It lazily generates key/value pairs of the object such that parsing is bound by CPU rather than memory or IO.
 
 ### Example
 Suppose you have a JSON file consisting of 10,000,000 key/value pairs such that each field is ~100 bytes. 

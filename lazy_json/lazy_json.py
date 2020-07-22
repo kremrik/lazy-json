@@ -8,6 +8,7 @@ Can we separate these into layers again?
 """
 
 
+# TODO: tons of repetition in here
 class ljson(object):
     def __init__(self, data, start: int, end: int):
         self.data = data
@@ -15,7 +16,6 @@ class ljson(object):
         self.end = end
 
     def __getitem__(self, key: str):
-        # walker = walk_json(self.data, self.start, self.end)
         for k, v in walk_json(self.data, self.start, self.end):
             keyname = file.get_json_from_bound(self.data, k)
 
@@ -29,13 +29,11 @@ class ljson(object):
             raise KeyError(key)
 
     def keys(self):
-        # walker = walk_json(self.data, self.start, self.end)
         for k, _ in walk_json(self.data, self.start, self.end):
             keyname = file.get_json_from_bound(self.data, k)
             yield keyname
 
     def values(self):
-        # walker = walk_json(self.data, self.start, self.end)
         for _, v in walk_json(self.data, self.start, self.end):
             if isinstance(v, ljson):
                 yield v
@@ -44,7 +42,6 @@ class ljson(object):
                 yield value
 
     def items(self):
-        # walker = walk_json(self.data, self.start, self.end)
         for k, v in walk_json(self.data, self.start, self.end):
             key = file.get_json_from_bound(self.data, k)
             if isinstance(v, ljson):

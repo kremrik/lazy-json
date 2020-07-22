@@ -8,7 +8,7 @@ It lazily generates key/value pairs of the object such that parsing is bound by 
 Suppose you have a JSON file consisting of 10,000,000 key/value pairs such that each field is ~100 bytes. 
 No one knows why this object exists, it just does. And on disk it's almost 5gb. You know that you need 
 the value at key "000314159" but you can't retrieve it by loading into memory with the `json` library
-since your computer only has 8gb of RAM. `lazy_json` to the rescue:
+because your computer sucks and only has 4gb of RAM. `lazy_json` to the rescue:
 
 ```python
 import lazy_json

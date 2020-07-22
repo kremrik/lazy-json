@@ -14,8 +14,8 @@ class ljson(object):
         self.end = end
 
     def __getitem__(self, key: str):
-        walker = walk_json(self.data, self.start, self.end)
-        for k, v in walker:
+        # walker = walk_json(self.data, self.start, self.end)
+        for k, v in walk_json(self.data, self.start, self.end):
             keyname = file.get_json_from_bound(self.data, k)
 
             if keyname == key:
@@ -28,14 +28,14 @@ class ljson(object):
             raise KeyError(key)
 
     def keys(self):
-        walker = walk_json(self.data, self.start, self.end)
-        for k, _ in walker:
+        # walker = walk_json(self.data, self.start, self.end)
+        for k, _ in walk_json(self.data, self.start, self.end):
             keyname = file.get_json_from_bound(self.data, k)
             yield keyname
 
     def values(self):
-        walker = walk_json(self.data, self.start, self.end)
-        for _, v in walker:
+        # walker = walk_json(self.data, self.start, self.end)
+        for _, v in walk_json(self.data, self.start, self.end):
             if isinstance(v, ljson):
                 yield v
             else:
@@ -43,8 +43,8 @@ class ljson(object):
                 yield value
 
     def items(self):
-        walker = walk_json(self.data, self.start, self.end)
-        for k, v in walker:
+        # walker = walk_json(self.data, self.start, self.end)
+        for k, v in walk_json(self.data, self.start, self.end):
             key = file.get_json_from_bound(self.data, k)
             if isinstance(v, ljson):
                 val = v
@@ -61,9 +61,6 @@ def walk_json(
     pos = start
 
     while 1:
-        # if pos >= end:
-        #     break
-
         # TODO: abstraction breach
         if file.get_next_non_whitespace_char(data, pos).position == end:
             break

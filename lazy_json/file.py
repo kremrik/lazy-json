@@ -33,18 +33,18 @@ def find(
         "left": mm.find,
         "right": mm.rfind
     }
-    find = sides[side]
+    _find = sides[side]
 
     if isinstance(char, str):
         char = char.encode()
 
     if not end:
-        return find(
+        return _find(
             char,
             start
         )
     else:
-        return find(
+        return _find(
             char,
             start,
             end
@@ -90,14 +90,13 @@ def get_next_unescaped_char(
     pos: int,
     char: str
 ) -> mmap_result:
-    char_pos = find(mm, char, pos)
-    pos += 1
-
-    prev = get(mm, char_pos - 1)  # will wrap around to -1
-    if prev != "\\":
-        return mmap_result(char_pos, char_pos)
-    else:
-        return get_next_unescaped_char(mm, pos, char)
+    while 1:
+        char_pos = find(mm, char, pos)
+        prev = get(mm, char_pos - 1)
+        if prev != "\\":
+            return mmap_result(char_pos, char_pos)
+        else:
+            pos += 1
 
 
 def get_next_non_whitespace_char(
@@ -105,16 +104,14 @@ def get_next_non_whitespace_char(
     pos: int
 ) -> mmap_result:
     whitespace = [" ", "\t", "\n"]
-
-    next_char = get(mm, pos)
-
-    if next_char == "":
-        return mmap_result(None, pos)
-
-    if next_char not in whitespace:
-        return mmap_result(next_char, pos)
-    else:
-        return get_next_non_whitespace_char(mm, pos + 1)
+    while 1:
+        next_char = get(mm, pos)
+        if next_char == "":
+            return mmap_result(None, pos)
+        if next_char not in whitespace:
+            return mmap_result(next_char, pos)
+        else:
+            pos += 1
 
 
 def get_prev_non_whitespace_char(
@@ -122,17 +119,16 @@ def get_prev_non_whitespace_char(
     pos: int
 ) -> mmap_result:
     whitespace = [" ", "\t", "\n"]
-    pos -= 1
+    while 1:
+        pos -= 1
+        prev_char = get(mm, pos)
 
-    prev_char = get(mm, pos)
-
-    if prev_char == "":
-        return mmap_result(None, pos)
-
-    if prev_char not in whitespace:
-        return mmap_result(prev_char, pos)
-    else:
-        return get_prev_non_whitespace_char(mm, pos)
+        if prev_char == "":
+            return mmap_result(None, pos)
+        if prev_char not in whitespace:
+            return mmap_result(prev_char, pos)
+        else:
+            pass
 
 
 # mmap traversal schemes

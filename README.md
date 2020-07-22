@@ -11,6 +11,10 @@ couldn't find the end of a nested value (ie, we recursed immediately and lost th
 So we used that learning and combined it with the previously built generator behavior for `lazy_json` and
 arrived at the working product.
 
+#### UPDATE
+Turns out that `mmap` doesn't play nicely with _actual_ memory IRL, and memory spikes when searching through a 
+huge mmap file. However, we can fix this with a sliding window using `mmap`'s `length` and `offset` args.
+
 ## Design goals
 
 `lazy-json` is a utility that solves a problem you hope never to have: a JSON file that's too large to load in memory. 

@@ -1,26 +1,6 @@
 # lazy-json
 
-## Branch combined-ideas notes
-#### WHAT HAPPENED?
-Figured out that attempting to perform a direct-access read of a JSON file was going to prove impossible without
-performing crazy regex/tests for whether a desired key is _actually_ a key, or simply part of a string value.
-That was branch `direct-access`.
-However, in the process of determining this, we figured out how to find the end of an arbitrarily nested value.
-Previously, in branch `file-layer`, we couldn't figure out how to recursively yield generators because we
-couldn't find the end of a nested value (ie, we recursed immediately and lost the "end" position of the value).
-So we used that learning and combined it with the previously built generator behavior for `lazy_json` and
-arrived at the working product.
-
-#### UPDATE
-Turns out that `mmap` doesn't play nicely with _actual_ memory IRL, and memory spikes when searching through a 
-huge mmap file. However, we can fix this with a sliding window using `mmap`'s `length` and `offset` args.
-
-#### UPDATE 2
-Using a chunking method like above will work, but it's vastly more complicated to retrieve the desired k/v's.
-A simpler solution is just to recreate the mmap every X calls performed on the map.
-
 ## Design goals
-
 `lazy-json` is a utility that solves a problem you hope never to have: a JSON file that's too large to load in memory. 
 I don't know what kind of monster would create such a file, but this is an exercise in solving the interesting problem
 surrounding large, recursive data formats. 

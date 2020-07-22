@@ -15,6 +15,10 @@ arrived at the working product.
 Turns out that `mmap` doesn't play nicely with _actual_ memory IRL, and memory spikes when searching through a 
 huge mmap file. However, we can fix this with a sliding window using `mmap`'s `length` and `offset` args.
 
+#### UPDATE 2
+Using a chunking method like above will work, but it's vastly more complicated to retrieve the desired k/v's.
+A simpler solution is just to recreate the mmap every X calls performed on the map.
+
 ## Design goals
 
 `lazy-json` is a utility that solves a problem you hope never to have: a JSON file that's too large to load in memory. 
@@ -35,4 +39,30 @@ with open("really_big.json", "w") as j:
 
 data["000314159"]
 # b'\x1f\x8b\x08\x00W\x14\n_\x02\xff30006414\xb5\x04\x00\x89l\xed\\\t\x00\x00\x00...'
+```
+
+### Test it Yourself
+Creates a really simple file like:
+```json
+{
+    "000000001": "hellohellohello...",
+    "000000002": "hellohellohello...",
+    ...
+    ...
+}
+```
+
+```python
+def write_json(lines, value): 
+    with open("huge.json", "w") as j: 
+        j.write("{") 
+        for i in range(lines): 
+            j.write(make_json_kv(str(i).zfill(len(str(lines))), value) + ",") 
+            j.write(make_json_kv(str(i+1).zfill(len(str(lines))), value)) 
+            j.write("}") 
+
+def make_json_kv(key, val): 
+    return f'"{key}": "{val}"'
+
+write_json(100000000, "hello"*100)
 ```

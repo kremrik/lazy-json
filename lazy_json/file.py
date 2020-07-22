@@ -1,8 +1,7 @@
 import json
 import mmap
 from collections import namedtuple
-from os import name
-from typing import Tuple, Union
+from typing import Union
 
 
 """
@@ -10,25 +9,65 @@ File interaction abstraction wrapping `mmap`
 """
 
 
-# mmap traversal primitives
 #------------------------------------------------------------------------------
-def read_from_io(
-    text_io_wrapper
+# TODO: stateful function
+def load_mm(
+    path: str,
+    reset: int = 1000000
 ):
-    return mmap.mmap(
-        text_io_wrapper.fileno(),
-        0,  # not sure if this is wise
-        access=mmap.ACCESS_READ
-    )
+    """
+    NOTE:   `reset` is the number of calls that have been made to `load_mm`
+            after which a new mmap will be created. We can probably make it
+            dynamic relative to the system's hardware.
+
+    Due to the weird issue of mmap traversals eating up memory without bound,
+    we have two options:
+      1. chunk the mmap using `length` and `offset`
+      2. reload the mmap every once in a while
+
+    Option 1 makes it very difficult to materialize json elements because a
+    given key/value might span multiple chunks, and we'd have to create a new
+    mmap object first for finding the bounds, then for retrieving the json.
+
+    Option 2 is not the least bit sexy, but it's by far the simpler of the two. 
+    And it succeeds in making this a CPU-bound problem instead of memory or IO.
+
+    Option 2 requires the use of some state to determine the following:
+      - How many calls have been made using the same mmap (under a certain
+        threshold should reuse the same mmap)
+      - What was the last mmap created (if we're under said threshold, return 
+        the same mmap seen last time)
+      - Is this the same file we've already mapped (if we get a new file path,
+        start the process over again)
+    """
+    if load_mm.calls % reset == 0 or path != load_mm.file:
+        with open(path, "r") as j:
+            mm = mmap.mmap(
+                j.fileno(),
+                0,
+                access=mmap.ACCESS_READ
+            )
+        load_mm.file = path
+        load_mm.mm = mm
+        load_mm.calls = 0
+
+    load_mm.calls += 1
+    return load_mm.mm
+
+load_mm.file = None
+load_mm.mm = None
+load_mm.calls = 0
 
 
 def find(
-    mm: mmap.mmap,
+    mm,
     char: Union[bytes, str],
     start: int = 0,
     end: int = None,
     side: str = "left"
 ) -> int:
+    mm = mm()
+
     sides = {
         "left": mm.find,
         "right": mm.rfind
@@ -52,29 +91,30 @@ def find(
 
 
 def get(
-    mm: mmap.mmap,
+    mm,
     start: int,
     end: int = None
 ) -> str:
     """non-inclusive end"""
+    _mm = mm()
     if not end:
         end = start + 1
-    return mm[start:end].decode()
+    return _mm[start:end].decode()
 
 
 def size(
-    mm: mmap.mmap
+    mm
 ) -> int:
+    mm = mm()
     return mm.size()
 
 
-# mmap traversal combinations
 #------------------------------------------------------------------------------
 mmap_result = namedtuple("mmap_result", ["result", "position"])
 
 
 def get_next_char(
-    mm: mmap.mmap,
+    mm,
     pos: int,
     char: str
 ) -> mmap_result:
@@ -86,7 +126,7 @@ def get_next_char(
 
 
 def get_next_unescaped_char(
-    mm: mmap.mmap,
+    mm,
     pos: int,
     char: str
 ) -> mmap_result:
@@ -100,7 +140,7 @@ def get_next_unescaped_char(
 
 
 def get_next_non_whitespace_char(
-    mm: mmap.mmap,
+    mm,
     pos: int
 ) -> mmap_result:
     whitespace = [" ", "\t", "\n"]
@@ -115,7 +155,7 @@ def get_next_non_whitespace_char(
 
 
 def get_prev_non_whitespace_char(
-    mm: mmap.mmap,
+    mm,
     pos: int
 ) -> mmap_result:
     whitespace = [" ", "\t", "\n"]
@@ -131,13 +171,12 @@ def get_prev_non_whitespace_char(
             pass
 
 
-# mmap traversal schemes
 #------------------------------------------------------------------------------
 bound = namedtuple("bound", ["bgn", "end"])
 
 
 def count_between(
-    mm: mmap.mmap,
+    mm,
     sub: str,
     start: int,
     end: int
@@ -159,7 +198,7 @@ def count_between(
 
 
 def find_end_of_json(
-    mm: mmap.mmap,
+    mm,
     pos: int
 ) -> int:
     """
@@ -185,7 +224,7 @@ def find_end_of_json(
 
 
 def end_of_json_obj(
-    mm: mmap.mmap,
+    mm,
     pos: int
 ) -> bool:
     """
@@ -199,14 +238,14 @@ def end_of_json_obj(
 
 
 def end_of_file(
-    mm: mmap.mmap,
+    mm,
 ) -> int:
     # TODO: breaks abstraction bounds, may need to refactor `get_next`
     return find(mm, "}", -1, None, "right")
 
 
 def val_is_json_obj(
-    mm: mmap.mmap,
+    mm,
     pos: int
 ) -> bool:
     if get(mm, pos) == "{":
@@ -215,7 +254,7 @@ def val_is_json_obj(
 
 
 def seek_to_key(
-    mm: mmap.mmap,
+    mm,
     pos: int
 ) -> int:
     return get_next_char(mm, pos, '"').position
@@ -230,7 +269,7 @@ def seek_to_val(
 
 
 def get_key(
-    mm: mmap.mmap,
+    mm,
     pos: int
 ) -> bound:
     """
@@ -241,7 +280,7 @@ def get_key(
 
 
 def get_val(
-    mm: mmap.mmap,
+    mm,
     pos: int
 ) -> bound:
     """
@@ -267,7 +306,7 @@ def get_val(
 
 
 def get_json_from_bound(
-    mm: mmap.mmap,
+    mm,
     b: bound
 ):
     bgn = b.bgn

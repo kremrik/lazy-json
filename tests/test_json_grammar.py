@@ -11,12 +11,13 @@ with open("/home/kemri/Projects/lazy-json/file_examples/numbers.json", "r") as j
         0,
         access=mmap.ACCESS_READ
         )
+DATA = lambda: NUMBERS
 
 
 class test_walk_json(unittest.TestCase):
 
     def test_no_nesting_numbers(self):
-        data = NUMBERS
+        data = DATA
         gold = [
             (file.bound(1, 6), file.bound(8, 9)),
             (file.bound(11, 16), file.bound(18, 19))

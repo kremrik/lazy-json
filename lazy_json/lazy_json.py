@@ -1,4 +1,5 @@
 from lazy_json import file
+from functools import partial
 from typing import Generator
 
 
@@ -86,6 +87,7 @@ def walk_json(
 def load(
     fp
 ):
-    data = file.read_from_io(fp)
-    size = file.end_of_file(data)
-    return ljson(data, 0, size)
+    fileno = fp.name
+    mm = partial(file.load_mm, path=fileno)
+    size = file.end_of_file(mm)
+    return ljson(mm, 0, size)

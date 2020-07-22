@@ -1,8 +1,8 @@
-from unittest.main import main
 from lazy_json import file
 import mmap
 import unittest
 from unittest import skip
+from functools import partial
 
 
 """
@@ -20,11 +20,12 @@ from unittest import skip
 
 
 with open("/home/kemri/Projects/lazy-json/file_examples/nested.json", "r") as j:
-    MM = mmap.mmap(
+    _mm = mmap.mmap(
         j.fileno(), 
         0,  # not sure if this is wise
         access=mmap.ACCESS_READ
         )
+MM = lambda: _mm
 
 
 class test_primitives(unittest.TestCase):

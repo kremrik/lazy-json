@@ -2,14 +2,15 @@ from lazy_json import lazy_json
 import unittest
 
 
-with open("/home/kemri/Projects/lazy-json/file_examples/nested.json", "r") as j:
-    NESTED = lazy_json.load(j)
+with open("/home/kemri/Projects/lazy-json/file_examples/nested.json", "r") as i:
+    NESTED = lazy_json.load(i)
 
 with open("/home/kemri/Projects/lazy-json/file_examples/numbers.json", "r") as j:
     NUMBERS = lazy_json.load(j)
 
 
 class test_lazy_json(unittest.TestCase):
+
     def test_get_item(self):
         data = NESTED
         gold = 3

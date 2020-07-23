@@ -1,4 +1,5 @@
 # lazy-json
+A test project to explore Python's `mmap` library and the complexities of parsing a recursive data format "in stream"
 
 ## Design goals
 `lazy_json` allows you to treat arbitrarily large JSON files on disk as a streaming problem rather than a batch problem.

@@ -19,6 +19,12 @@ huge mmap file. However, we can fix this with a sliding window using `mmap`'s `l
 Using a chunking method like above will work, but it's vastly more complicated to retrieve the desired k/v's.
 A simpler solution is just to recreate the mmap every X calls performed on the map.
 
+#### WHAT WAS LEARNED
+Software Development
+- A layered approach to abstractions is extremely valuable. When I had to move from passing around an `mmap.mmap` object to passing a function that _returned_ one instead, I only had to change `file.find` and `file.get` functions in the `file` layer, and `lazy_json.load` in the API layer (the latter only be necessary because I didn't properly use or create the `file` abstraction for loading from an IOWrapper)
+- Another realization that tied into this layered approach is **(1)** a `__all__` would really help to make sure you only access the topmost level of any layer and **(2)** it is likely you're not helping anyone if your "abstraction" layer returns data or an object that requires you to look at its implementation in order to use it. An example of this might be returning a `dataclass` object from an API. You're abstracting away the details of how you made that dataclass, but you're still required to go to that function's definition in order to figure out how to actually _use_ it. A potentially better strategy might be to expose functions that act as "verbs" instead of "nouns": `get_deploy_env` rather than `env['deploy']`, for example. Obviously it depends on what must be passed to the function, but for brevity's sake the example still holds.
+- For some reason, Python's `mmap` library (as described above) eats up memory like crazy when performing a large number of actions on it. Have one idea for debugging this in the answer to my question here: https://stackoverflow.com/questions/62986736/python-mmap-memory-leak.
+
 ## Design goals
 
 `lazy-json` is a utility that solves a problem you hope never to have: a JSON file that's too large to load in memory. 

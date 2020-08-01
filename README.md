@@ -62,7 +62,10 @@ data["one"]["two"]
 ```
 
 Keep in mind that, since this process is treated as a stream, the further "down" the file you go, the longer the
-process will take to materialize values. For now.
+process will take to materialize values. The easiest way forward to solve this would be to simply seek to the
+place in the file where a key is found, and repeat the process for each sub-key in the slice. This would require
+a different mmnap traversal that resets itself after N characters to avoid the aforementioned weird "mem leak".
+I don't feel like implementing this right now, but it's certainly possible.
 
 ### Test it Yourself
 Creates a really simple file like:
